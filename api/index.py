@@ -16,7 +16,7 @@ from dotenv import load_dotenv
 _env_path = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), ".env")
 load_dotenv(dotenv_path=_env_path, override=True)
 
-from lib.database import supabase
+from lib.database import supabase, get_supabase
 from lib.auth import get_current_user, get_current_student, get_current_admin
 from lib.parser import extract_text_from_pdf, extract_skills, extract_years_of_experience
 from lib.scoring import calculate_ats_score
@@ -295,15 +295,41 @@ async def signup_action(
             })
 
         # 1. Create the auth user
-        res = supabase.auth.sign_up({"email": email, "password": password})
-        if not res.user:
+        # Using admin.create_user with email_confirm=True avoids SMTP delivery timeouts and confirmation locks
+        user_id = None
+        admin_client = get_supabase()
+        try:
+            res = admin_client.auth.admin.create_user({
+                "email": email,
+                "password": password,
+                "email_confirm": True,
+                "user_metadata": {"name": name, "role": role},
+            })
+            if res and res.user:
+                user_id = res.user.id
+                print(f"[signup] admin created user: {user_id}")
+        except Exception as admin_err:
+            err_lower = str(admin_err).lower()
+            if "already registered" in err_lower or "already exists" in err_lower or "duplicate" in err_lower:
+                return templates.TemplateResponse("signup.html", {
+                    "request": request,
+                    "error": "An account with this email already exists. Please log in.",
+                })
+            print(f"[signup] admin.create_user failed ({admin_err}), trying standard sign_up...")
+            res = supabase.auth.sign_up({"email": email, "password": password})
+            if not res or not res.user:
+                return templates.TemplateResponse("signup.html", {
+                    "request": request,
+                    "error": "Signup failed. The email may already be registered.",
+                })
+            user_id = res.user.id
+            print(f"[signup] standard auth.users created: {user_id}")
+
+        if not user_id:
             return templates.TemplateResponse("signup.html", {
                 "request": request,
-                "error": "Signup failed. The email may already be registered.",
+                "error": "Could not create user account. Please check your details and try again.",
             })
-
-        user_id = res.user.id
-        print(f"[signup] auth.users created: {user_id}")
 
         # 2. Upsert public.users as a safety net (also called in retry loop)
         _ensure_public_user(user_id, email, name)
@@ -344,7 +370,8 @@ async def signup_action(
         if last_error:
             # Clean up the orphaned auth user so they can retry
             try:
-                supabase.auth.admin.delete_user(user_id)
+                admin_cleanup = get_supabase()
+                admin_cleanup.auth.admin.delete_user(user_id)
                 print(f"[signup] cleaned up auth user {user_id} after failure")
             except Exception as de:
                 print(f"[signup] could not delete auth user: {de}")
@@ -358,27 +385,39 @@ async def signup_action(
             })
 
         # 4. Auto-login
-        login_res = supabase.auth.sign_in_with_password({"email": email, "password": password})
-        if not login_res.session:
-            return templates.TemplateResponse("login.html", {
-                "request": request,
-                "error": "Account created! Please check your email to confirm, then log in.",
-                "tab": "user",
-            })
+        try:
+            auth_client = get_supabase()
+            login_res = auth_client.auth.sign_in_with_password({"email": email, "password": password})
+            if login_res and login_res.session:
+                redirect_url = "/dashboard" if role == "student" else "/recruiter/onboarding"
+                response = RedirectResponse(url=redirect_url, status_code=302)
+                response.set_cookie(
+                    key="sb-access-token",
+                    value=login_res.session.access_token,
+                    httponly=True,
+                    samesite="lax",
+                )
+                return response
+        except Exception as login_err:
+            print(f"[signup] auto-login after signup failed: {login_err}")
 
-        redirect_url = "/dashboard" if role == "student" else "/recruiter/onboarding"
-        response = RedirectResponse(url=redirect_url, status_code=302)
-        response.set_cookie(
-            key="sb-access-token",
-            value=login_res.session.access_token,
-            httponly=True,
-            samesite="lax",
-        )
-        return response
+        # If auto-login didn't complete session, redirect to login page
+        return templates.TemplateResponse("login.html", {
+            "request": request,
+            "error": "Account created successfully! Please log in.",
+            "tab": "user",
+        })
 
     except Exception as e:
         import traceback; traceback.print_exc()
-        return templates.TemplateResponse("signup.html", {"request": request, "error": str(e)})
+        err_msg = str(e)
+        if "timed out" in err_msg.lower() or "timeout" in err_msg.lower():
+            friendly_err = "The authentication service request timed out. Please check your internet connection and try again."
+        elif "already registered" in err_msg.lower() or "already exists" in err_msg.lower():
+            friendly_err = "An account with this email already exists. Please log in."
+        else:
+            friendly_err = f"Account creation failed: {err_msg}"
+        return templates.TemplateResponse("signup.html", {"request": request, "error": friendly_err})
 
 # ---------------------------------------------------------------------------
 # Recruiter Onboarding Routes
