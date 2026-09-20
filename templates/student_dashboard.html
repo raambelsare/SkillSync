@@ -130,4 +130,13 @@
         </div>
     </div>
 </div>
+
+<script>
+    document.addEventListener('htmx:afterSwap', function(evt) {
+        if (evt.detail.target && evt.detail.target.id === 'chat-messages') {
+            evt.detail.target.scrollTop = evt.detail.target.scrollHeight;
+        }
+    });
+</script>
 {% endblock %}
+

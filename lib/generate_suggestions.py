@@ -28,23 +28,29 @@ def generate_improvement_suggestions(missing_skills: List[str], target_job_title
     Keep the response short and direct.
     """
     
+    MODELS = ["gemini-3.5-flash", "gemini-3.5-flash-lite", "gemini-3.7-flash", "gemini-flash-latest", "gemini-3.6-flash"]
     try:
         client = genai.Client(api_key=google_api_key)
-        response = client.models.generate_content(
-            model='gemini-3.6-flash',
-            contents=prompt,
-        )
-        if response and response.candidates and response.candidates[0].content and response.candidates[0].content.parts:
-            parts: List[str] = []
-            for p in response.candidates[0].content.parts:
-                p_text = getattr(p, "text", None)
-                if p_text:
-                    parts.append(str(p_text))
-            result = "".join(parts).strip()
-            if result:
-                return result
+        for model_name in MODELS:
+            try:
+                response = client.models.generate_content(
+                    model=model_name,
+                    contents=prompt,
+                )
+                if response and response.candidates and response.candidates[0].content and response.candidates[0].content.parts:
+                    parts: List[str] = []
+                    for p in response.candidates[0].content.parts:
+                        p_text = getattr(p, "text", None)
+                        if p_text:
+                            parts.append(str(p_text))
+                    result = "".join(parts).strip()
+                    if result:
+                        return result
+            except Exception:
+                continue
         return fallback_text
     except Exception:
         return fallback_text
+
 
 

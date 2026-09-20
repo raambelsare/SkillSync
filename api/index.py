@@ -558,42 +558,93 @@ async def upload_resume(request: Request, file: UploadFile = File(...), user: di
 async def api_chat(request: Request, message: str = Form(...), user: dict = Depends(get_current_student)):
     try:
         user_id = user['user'].id
+        user_name = user.get('name', 'Student')
         
-        # 1. Fetch user's latest resume analysis (if any)
-        resume_res = supabase.table("resumes").select("id").eq("student_id", user_id).order("uploaded_at", desc=True).limit(1).execute()
+        # 1. Fetch user's latest resume, analysis, and ATS score
         context = ""
-        if resume_res.data:
-            resume_id = resume_res.data[0]['id']
-            analysis = supabase.table("resume_analysis").select("*").eq("resume_id", resume_id).execute()
-            if analysis.data:
-                a = analysis.data[0]
-                context = f"The user has {a.get('experience_years', 0)} years of experience. Their skills are: {', '.join(a.get('skills_extracted', []))}."
+        try:
+            resume_res = supabase.table("resumes").select("id, storage_path").eq("student_id", user_id).order("uploaded_at", desc=True).limit(1).execute()
+            if resume_res.data:
+                resume_id = resume_res.data[0]['id']
+                storage_path = resume_res.data[0].get('storage_path')
                 
-        # 2. Call Gemini
+                # Fetch skills & experience
+                skills: list[str] = []
+                years_exp = 0
+                analysis = supabase.table("resume_analysis").select("*").eq("resume_id", resume_id).execute()
+                if analysis.data:
+                    skills = analysis.data[0].get('skills_extracted', [])
+                    years_exp = analysis.data[0].get('experience_years', 0)
+                
+                # Fetch latest ATS score
+                ats_score = "N/A"
+                ats_data = supabase.table("ats_scores").select("score, suggestions").eq("resume_id", resume_id).execute()
+                if ats_data.data:
+                    ats_score = str(ats_data.data[0].get("score", "N/A"))
+                
+                # Download full resume text from Supabase storage
+                resume_text = ""
+                if storage_path:
+                    try:
+                        file_data = supabase.storage.from_("resumes").download(storage_path)
+                        resume_text = extract_text_from_pdf(file_data)
+                    except Exception:
+                        pass
+                
+                resume_excerpt = resume_text[:3000] if resume_text else "No raw text available."
+                context = (
+                    f"Candidate Name: {user_name}\n"
+                    f"Identified Skills: {', '.join(skills) if skills else 'None'}\n"
+                    f"Experience: {years_exp} years\n"
+                    f"Latest ATS Score: {ats_score}/100\n"
+                    f"Full Resume Content Excerpt:\n{resume_excerpt}\n"
+                )
+        except Exception as e:
+            print(f"Error fetching resume context for chat: {e}")
+            context = ""
+
+        # 2. Call Gemini with multi-model fallback chain
         google_api_key = os.environ.get("GOOGLE_API_KEY")
         if not google_api_key:
-            ai_msg = "Google API Key not configured."
+            ai_msg = "Google API Key is not configured."
         else:
-            try:
-                # pyrefly: ignore [missing-import]
-                from google import genai
-                client = genai.Client(api_key=google_api_key)
-                prompt = f"You are an AI career coach. The user asks: '{message}'. {context} Answer concisely in 1-2 paragraphs."
-                response = client.models.generate_content(model='gemini-3.6-flash', contents=prompt)
-                parts: list[str] = []
-                if response and response.candidates and response.candidates[0].content and response.candidates[0].content.parts:
-                    for p in response.candidates[0].content.parts:
-                        p_text = getattr(p, "text", None)
-                        if p_text:
-                            parts.append(str(p_text))
-                ai_msg = "".join(parts).strip() if parts else "I am here to help you improve your resume and find career opportunities."
-            except Exception:
-                ai_msg = "Sorry, I encountered an error answering your question."
+            prompt = (
+                "You are SkillSync AI, an expert, supportive, and practical career coach.\n"
+                f"Candidate Resume Details:\n{context if context else 'No resume uploaded yet.'}\n\n"
+                f"Candidate Question: \"{message}\"\n\n"
+                "Instructions:\n"
+                "- If the candidate has uploaded a resume, answer specifically referencing their actual skills, projects, and experience.\n"
+                "- Keep your answer concise, structured, and actionable (1-2 clear paragraphs or bullet points).\n"
+                "- Provide encouraging, industry-standard career advice."
+            )
+            
+            # pyrefly: ignore [missing-import]
+            from google import genai
+            client = genai.Client(api_key=google_api_key)
+            
+            MODELS = ["gemini-3.5-flash", "gemini-3.5-flash-lite", "gemini-3.7-flash", "gemini-flash-latest", "gemini-3.6-flash"]
+            ai_msg = None
+            
+            for model_name in MODELS:
+                try:
+                    response = client.models.generate_content(model=model_name, contents=prompt)
+                    parts: list[str] = []
+                    if response and response.candidates and response.candidates[0].content and response.candidates[0].content.parts:
+                        for p in response.candidates[0].content.parts:
+                            p_text = getattr(p, "text", None)
+                            if p_text:
+                                parts.append(str(p_text))
+                    result = "".join(parts).strip()
+                    if result:
+                        ai_msg = result
+                        break
+                except Exception as model_err:
+                    print(f"Model {model_name} attempt: {model_err}")
+                    continue
+                    
+            if not ai_msg:
+                ai_msg = "I'm having trouble connecting right now. Please try asking again in a moment."
 
-
-
-                
-        # 3. Return HTML fragment for HTMX to append
         html = f"""
         <div class="w-full flex justify-end">
             <div class="bg-[#1C1C1F] border border-white/[.08] text-white p-3 rounded-lg text-sm inline-block max-w-[85%] text-left">
