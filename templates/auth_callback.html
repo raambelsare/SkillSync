@@ -1,0 +1,59 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="flex-grow flex items-center justify-center p-4 bg-[#0A0A0B]">
+    <div class="bg-[#141416] border border-white/[.08] p-8 rounded-2xl w-full max-w-md text-center fade-in">
+        <img src="/static/skillsync-logo.png" alt="SkillSync Logo"
+             class="w-12 h-12 rounded-xl object-contain mx-auto mb-6"
+             style="filter: drop-shadow(0 0 8px rgba(255,107,53,0.35));">
+        <h2 class="text-2xl font-bold text-white mb-4">Authenticating...</h2>
+        <div class="animate-spin rounded-full h-10 w-10 border-2 border-white/[.08] border-t-brand-500 mx-auto mb-4"></div>
+        <p class="text-ink-secondary text-sm">Please wait while we log you in.</p>
+    </div>
+</div>
+
+<script>
+    // Supabase redirects with tokens in the URL fragment (hash) for implicit grant.
+    window.onload = function() {
+        const hash = window.location.hash.substring(1);
+        if (!hash) {
+            window.location.href = "/login?error=Authentication%20failed.";
+            return;
+        }
+
+        // Parse fragment parameters
+        const params = new URLSearchParams(hash);
+        const accessToken = params.get('access_token');
+        const refreshToken = params.get('refresh_token');
+
+        if (accessToken) {
+            // POST to backend to set cookie
+            fetch('/auth/set-session', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                },
+                body: new URLSearchParams({
+                    'access_token': accessToken,
+                    'refresh_token': refreshToken || ''
+                })
+            })
+            .then(response => {
+                if (response.redirected) {
+                    window.location.href = response.url;
+                } else if (response.ok) {
+                    window.location.href = '/dashboard';
+                } else {
+                    window.location.href = "/login?error=Failed%20to%20set%20session.";
+                }
+            })
+            .catch(error => {
+                console.error("Error setting session:", error);
+                window.location.href = "/login?error=Server%20error.";
+            });
+        } else {
+            window.location.href = "/login?error=No%20access%20token%20found.";
+        }
+    };
+</script>
+{% endblock %}

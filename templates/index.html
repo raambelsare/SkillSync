@@ -1,0 +1,284 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<!-- ══════════════════════════════════════════════
+     HERO SECTION
+══════════════════════════════════════════════ -->
+<div class="relative flex-grow flex flex-col items-center justify-center overflow-hidden bg-[#0A0A0B] min-h-[92vh]">
+
+    <!-- Three.js Canvas -->
+    <canvas id="hero-canvas" class="absolute inset-0 z-0 pointer-events-none opacity-60"></canvas>
+
+    <!-- Radial eclipse glow behind hero -->
+    <div class="absolute inset-0 z-0 pointer-events-none" aria-hidden="true">
+        <div style="
+            position: absolute;
+            top: -10%;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 900px;
+            height: 600px;
+            background: radial-gradient(ellipse at center, rgba(255,107,53,0.13) 0%, rgba(255,61,0,0.06) 40%, transparent 70%);
+            filter: blur(2px);
+        "></div>
+    </div>
+
+    <!-- Hero Content -->
+    <div class="relative z-10 text-center px-4 max-w-4xl mx-auto fade-in mt-12 md:mt-0">
+
+        <!-- Badge -->
+        <div class="inline-flex items-center gap-2 mb-6 px-4 py-1.5 rounded-full border border-white/[.08] bg-white/[.03] backdrop-blur-md">
+            <span class="w-2 h-2 rounded-full bg-brand-500 animate-pulse flex-shrink-0"></span>
+            <span class="text-sm font-medium text-ink-secondary tracking-wide">AI-Powered Career Advancement</span>
+        </div>
+
+        <!-- Headline -->
+        <h1 class="text-5xl md:text-7xl font-extrabold tracking-tight leading-[1.05] mb-6" style="letter-spacing: -0.03em;">
+            <span class="text-gradient-white">Elevate Your Resume.</span><br>
+            <span class="text-gradient-orange">Land the Job.</span>
+        </h1>
+
+        <!-- Subtext -->
+        <p class="text-lg md:text-xl text-ink-secondary mb-10 max-w-2xl mx-auto leading-relaxed">
+            Upload your resume, get instant ATS scoring, AI-driven improvement suggestions,
+            and match with the perfect roles.
+        </p>
+
+        <!-- CTAs -->
+        <div class="flex flex-col sm:flex-row gap-4 justify-center">
+            <a href="/signup" class="btn-primary px-8 py-4 text-base rounded-xl inline-flex items-center justify-center gap-2">
+                Get Started Free
+                <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3"/>
+                </svg>
+            </a>
+            <a href="/login" class="btn-ghost px-8 py-4 text-base rounded-xl inline-flex items-center justify-center">
+                Sign In
+            </a>
+        </div>
+
+        <!-- Subtle stats row -->
+        <div class="mt-14 flex items-center justify-center gap-8 text-sm text-ink-muted">
+            <div class="flex items-center gap-2">
+                <span class="text-white font-semibold">500+</span>
+                <span>Resumes Analyzed</span>
+            </div>
+            <div class="w-px h-4 bg-white/[.08]"></div>
+            <div class="flex items-center gap-2">
+                <span class="text-white font-semibold">92%</span>
+                <span>ATS Pass Rate</span>
+            </div>
+            <div class="w-px h-4 bg-white/[.08]"></div>
+            <div class="flex items-center gap-2">
+                <span class="text-white font-semibold">AI</span>
+                <span>Gemini Powered</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bottom fade-out -->
+    <div class="absolute bottom-0 left-0 right-0 h-40 bg-gradient-to-t from-[#0A0A0B] to-transparent z-10 pointer-events-none"></div>
+</div>
+
+
+
+<!-- ══════════════════════════════════════════════
+     FEATURES — BENTO GRID
+══════════════════════════════════════════════ -->
+<section class="py-24 bg-[#0A0A0B] relative overflow-hidden">
+    <!-- Subtle background texture -->
+    <div class="absolute inset-0 pointer-events-none" aria-hidden="true"
+         style="background: radial-gradient(ellipse 1200px 500px at 50% 100%, rgba(255,107,53,0.04) 0%, transparent 70%);"></div>
+
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+
+        <!-- Section header -->
+        <div class="text-center mb-16 fade-up">
+            <div class="inline-flex items-center gap-2 mb-4 px-3 py-1 rounded-full border border-white/[.08] bg-white/[.02]">
+                <span class="text-xs font-medium text-brand-400 uppercase tracking-widest">How it works</span>
+            </div>
+            <h2 class="text-4xl md:text-5xl font-bold text-white mb-4" style="letter-spacing: -0.02em;">
+                Everything you need to<br><span class="text-gradient-orange">accelerate your job search</span>
+            </h2>
+            <p class="text-lg text-ink-secondary max-w-xl mx-auto">
+                From upload to offer — our AI handles the heavy lifting.
+            </p>
+        </div>
+
+        <!-- Bento Grid -->
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 auto-rows-auto">
+
+            <!-- Card 1 — Wide (col-span-2): ATS Scoring -->
+            <div class="md:col-span-2 bg-[#141416] border border-white/[.08] rounded-2xl p-8 card-hover fade-up relative overflow-hidden">
+                <!-- inner glow accent -->
+                <div class="absolute top-0 right-0 w-64 h-64 pointer-events-none"
+                     style="background: radial-gradient(circle at top right, rgba(255,107,53,0.07), transparent 70%);"></div>
+                <div class="w-12 h-12 rounded-xl flex items-center justify-center mb-6 bg-brand-900/40 text-brand-500">
+                    <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                    </svg>
+                </div>
+                <h3 class="text-2xl font-bold text-white mb-3">Instant ATS Scoring</h3>
+                <p class="text-ink-secondary leading-relaxed max-w-lg">
+                    Upload your PDF resume and instantly see how well it performs against standard ATS filters.
+                    Get a precise score so you know exactly where you stand.
+                </p>
+                <!-- Mini score preview -->
+                <div class="mt-8 flex items-center gap-3">
+                    <div class="flex items-center gap-2 px-3 py-1.5 rounded-full bg-brand-900/30 border border-brand-500/20">
+                        <div class="w-2 h-2 rounded-full bg-brand-500"></div>
+                        <span class="text-xs font-medium text-brand-400">ATS Score: 87/100</span>
+                    </div>
+                    <div class="flex items-center gap-2 px-3 py-1.5 rounded-full bg-green-950/40 border border-green-800/30">
+                        <div class="w-2 h-2 rounded-full bg-green-400"></div>
+                        <span class="text-xs font-medium text-green-400">Strong Match</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Card 2 — Tall (row-span-2): AI Suggestions -->
+            <div class="md:row-span-2 bg-[#141416] border border-white/[.08] rounded-2xl p-8 card-hover fade-up relative overflow-hidden flex flex-col">
+                <div class="absolute bottom-0 left-0 w-full h-48 pointer-events-none"
+                     style="background: linear-gradient(to top, rgba(255,107,53,0.05), transparent);"></div>
+                <div class="w-12 h-12 rounded-xl flex items-center justify-center mb-6 bg-brand-900/40 text-brand-500">
+                    <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z"/>
+                    </svg>
+                </div>
+                <h3 class="text-2xl font-bold text-white mb-3">AI Suggestions</h3>
+                <p class="text-ink-secondary leading-relaxed">
+                    Get actionable, personalized feedback from Gemini AI to fill skill gaps
+                    and improve your formatting.
+                </p>
+                <!-- Sample suggestion list -->
+                <div class="mt-8 space-y-3 flex-grow">
+                    <div class="flex items-start gap-3 p-3 rounded-xl bg-white/[.03] border border-white/[.05]">
+                        <div class="w-5 h-5 rounded-full bg-brand-500/20 flex items-center justify-center flex-shrink-0 mt-0.5">
+                            <svg class="w-3 h-3 text-brand-400" fill="currentColor" viewBox="0 0 20 20">
+                                <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/>
+                            </svg>
+                        </div>
+                        <p class="text-xs text-ink-secondary">Add quantifiable achievements to experience section</p>
+                    </div>
+                    <div class="flex items-start gap-3 p-3 rounded-xl bg-white/[.03] border border-white/[.05]">
+                        <div class="w-5 h-5 rounded-full bg-brand-500/20 flex items-center justify-center flex-shrink-0 mt-0.5">
+                            <svg class="w-3 h-3 text-brand-400" fill="currentColor" viewBox="0 0 20 20">
+                                <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/>
+                            </svg>
+                        </div>
+                        <p class="text-xs text-ink-secondary">Include relevant keywords from job descriptions</p>
+                    </div>
+                    <div class="flex items-start gap-3 p-3 rounded-xl bg-white/[.03] border border-white/[.05]">
+                        <div class="w-5 h-5 rounded-full bg-brand-500/20 flex items-center justify-center flex-shrink-0 mt-0.5">
+                            <svg class="w-3 h-3 text-brand-400" fill="currentColor" viewBox="0 0 20 20">
+                                <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/>
+                            </svg>
+                        </div>
+                        <p class="text-xs text-ink-secondary">Add a professional summary paragraph</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Card 3 — Small: Role Matching -->
+            <div class="bg-[#141416] border border-white/[.08] rounded-2xl p-7 card-hover fade-up relative overflow-hidden">
+                <div class="w-12 h-12 rounded-xl flex items-center justify-center mb-5 bg-emerald-950/50 text-emerald-400">
+                    <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/>
+                    </svg>
+                </div>
+                <h3 class="text-lg font-bold text-white mb-2">Role Matching</h3>
+                <p class="text-ink-secondary text-sm leading-relaxed">
+                    Automatically match your extracted skills to roles with direct search links.
+                </p>
+            </div>
+
+            <!-- Card 4 — Small: Instant Job Matching -->
+            <div class="bg-[#141416] border border-white/[.08] rounded-2xl p-7 card-hover fade-up relative overflow-hidden">
+                <div class="w-12 h-12 rounded-xl flex items-center justify-center mb-5 bg-violet-950/50 text-violet-400">
+                    <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"/>
+                    </svg>
+                </div>
+                <h3 class="text-lg font-bold text-white mb-2">Smart Insights</h3>
+                <p class="text-ink-secondary text-sm leading-relaxed">
+                    Understand your skill gaps and get a clear path to your target role.
+                </p>
+            </div>
+
+        </div><!-- /bento grid -->
+
+        <!-- Bottom CTA row -->
+        <div class="mt-16 text-center fade-up">
+            <a href="/signup" class="btn-primary inline-flex items-center gap-2 px-8 py-4 text-base rounded-xl">
+                Start Analyzing for Free
+                <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3"/>
+                </svg>
+            </a>
+        </div>
+
+    </div>
+</section>
+
+<!-- Three.js CDN -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r134/three.min.js"></script>
+<script>
+    const canvas = document.getElementById('hero-canvas');
+    const renderer = new THREE.WebGLRenderer({ canvas, alpha: true, antialias: true });
+    renderer.setSize(window.innerWidth, window.innerHeight);
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+
+    const scene = new THREE.Scene();
+    const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+    camera.position.z = 30;
+
+    const particlesGeometry = new THREE.BufferGeometry();
+    const particlesCount = 700;
+    const posArray = new Float32Array(particlesCount * 3);
+    for (let i = 0; i < particlesCount * 3; i++) {
+        posArray[i] = (Math.random() - 0.5) * 100;
+    }
+    particlesGeometry.setAttribute('position', new THREE.BufferAttribute(posArray, 3));
+
+    const material = new THREE.PointsMaterial({
+        size: 0.15,
+        color: 0xFF6B35, // Orange accent
+        transparent: true,
+        opacity: 0.7,
+        blending: THREE.AdditiveBlending
+    });
+
+    const particlesMesh = new THREE.Points(particlesGeometry, material);
+    scene.add(particlesMesh);
+
+    let mouseX = 0, mouseY = 0, targetX = 0, targetY = 0;
+    const windowHalfX = window.innerWidth / 2;
+    const windowHalfY = window.innerHeight / 2;
+
+    document.addEventListener('mousemove', (event) => {
+        mouseX = (event.clientX - windowHalfX) * 0.0005;
+        mouseY = (event.clientY - windowHalfY) * 0.0005;
+    });
+
+    const clock = new THREE.Clock();
+    function animate() {
+        requestAnimationFrame(animate);
+        const elapsedTime = clock.getElapsedTime();
+        particlesMesh.rotation.y = elapsedTime * 0.05;
+        particlesMesh.rotation.x = elapsedTime * 0.02;
+        targetX = mouseX * 0.5;
+        targetY = mouseY * 0.5;
+        particlesMesh.rotation.y += 0.05 * (targetX - particlesMesh.rotation.y);
+        particlesMesh.rotation.x += 0.05 * (targetY - particlesMesh.rotation.x);
+        renderer.render(scene, camera);
+    }
+    animate();
+
+    window.addEventListener('resize', () => {
+        camera.aspect = window.innerWidth / window.innerHeight;
+        camera.updateProjectionMatrix();
+        renderer.setSize(window.innerWidth, window.innerHeight);
+    });
+</script>
+{% endblock %}

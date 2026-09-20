@@ -1,0 +1,13 @@
+[
+  "Python", "JavaScript", "TypeScript", "HTML", "CSS", "React", "Next.js", "Vue", "Angular", "Svelte",
+  "Node.js", "Express", "FastAPI", "Flask", "Django", "Spring Boot", "Ruby on Rails", "Laravel",
+  "SQL", "PostgreSQL", "MySQL", "MongoDB", "Redis", "Firebase", "Supabase", "DynamoDB",
+  "AWS", "GCP", "Azure", "Docker", "Kubernetes", "Terraform", "CI/CD", "GitHub Actions",
+  "Git", "GitHub", "GitLab", "Bitbucket",
+  "C++", "C#", "Java", "Go", "Rust", "Swift", "Kotlin", "PHP", "Ruby",
+  "Machine Learning", "Deep Learning", "TensorFlow", "PyTorch", "Scikit-Learn", "Pandas", "NumPy", "Data Analysis",
+  "Communication", "Leadership", "Teamwork", "Problem Solving", "Critical Thinking", "Time Management",
+  "Agile", "Scrum", "Kanban", "Jira", "Confluence",
+  "Figma", "UI/UX", "Tailwind CSS", "Bootstrap", "Material UI",
+  "Excel", "Word", "PowerPoint", "Tableau", "Power BI"
+]

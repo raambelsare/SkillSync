@@ -1,0 +1,271 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SkillSync — AI-Powered Career Advancement</title>
+    <meta name="description" content="Upload your resume, get instant ATS scoring, AI-driven improvement suggestions, and match with the perfect roles.">
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- HTMX -->
+    <script src="https://unpkg.com/htmx.org@1.9.11"></script>
+    <!-- GSAP for light motion accents -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+    <!-- Inter Font -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        brand: {
+                            50:  '#FFF1EB',
+                            100: '#FFD9CC',
+                            400: '#FF8C64',
+                            500: '#FF6B35',
+                            600: '#FF3D00',
+                            900: '#3D1000',
+                        },
+                        surface: {
+                            bg:      '#0A0A0B',
+                            card:    '#141416',
+                            overlay: '#1C1C1F',
+                        },
+                        ink: {
+                            primary:   '#FFFFFF',
+                            secondary: '#A1A1AA',
+                            muted:     '#52525B',
+                        }
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                    },
+                    boxShadow: {
+                        'glow-sm':  '0 0 0 1px rgba(255,107,53,0.2), 0 4px 16px rgba(255,107,53,0.08)',
+                        'glow':     '0 0 0 1px rgba(255,107,53,0.3), 0 8px 32px rgba(255,107,53,0.12)',
+                        'glow-lg':  '0 0 0 1px rgba(255,107,53,0.4), 0 16px 48px rgba(255,107,53,0.18)',
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        /* ── Base ── */
+        *, *::before, *::after { box-sizing: border-box; }
+        body { font-family: 'Inter', sans-serif; -webkit-font-smoothing: antialiased; }
+
+        /* ── Scroll animations ── */
+        .fade-in  { animation: fadeIn 0.5s ease-out forwards; }
+        .fade-up  { opacity: 0; transform: translateY(24px); transition: opacity 0.6s ease, transform 0.6s ease; }
+        .fade-up.visible { opacity: 1; transform: translateY(0); }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(12px); }
+            to   { opacity: 1; transform: translateY(0); }
+        }
+
+        /* ── Card glow on hover ── */
+        .card-hover {
+            transition: border-color 0.25s ease, box-shadow 0.25s ease, transform 0.25s ease;
+        }
+        .card-hover:hover {
+            border-color: rgba(255,107,53,0.25) !important;
+            box-shadow: 0 0 0 1px rgba(255,107,53,0.15), 0 8px 40px rgba(255,107,53,0.08);
+            transform: translateY(-2px);
+        }
+
+        /* ── Custom scrollbar ── */
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: #0A0A0B; }
+        ::-webkit-scrollbar-thumb { background: #3D1000; border-radius: 3px; }
+        ::-webkit-scrollbar-thumb:hover { background: #FF6B35; }
+
+        /* ── Input focus ring ── */
+        input:focus, select:focus, textarea:focus {
+            outline: none;
+            box-shadow: 0 0 0 2px rgba(255,107,53,0.5) !important;
+            border-color: rgba(255,107,53,0.6) !important;
+        }
+
+        /* ── Navbar scroll effect ── */
+        .nav-scrolled {
+            background: rgba(10,10,11,0.95) !important;
+            border-bottom-color: rgba(255,255,255,0.08) !important;
+        }
+
+        /* ── HTMX loading indicator ── */
+        .htmx-indicator { display: none; }
+        .htmx-request .htmx-indicator { display: block; }
+        .htmx-request span { display: none; }
+
+        /* ── Gradient text utility ── */
+        .text-gradient-orange {
+            background: linear-gradient(135deg, #FF6B35, #FF3D00);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        .text-gradient-white {
+            background: linear-gradient(180deg, #FFFFFF 0%, #A1A1AA 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        /* ── CTA button glow pulse ── */
+        @keyframes glowPulse {
+            0%, 100% { box-shadow: 0 0 20px rgba(255,107,53,0.3); }
+            50%       { box-shadow: 0 0 36px rgba(255,107,53,0.5); }
+        }
+        .btn-primary {
+            background: linear-gradient(135deg, #FF6B35, #FF3D00);
+            color: white;
+            font-weight: 600;
+            border-radius: 10px;
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+            box-shadow: 0 0 20px rgba(255,107,53,0.25);
+        }
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 0 32px rgba(255,107,53,0.45);
+        }
+        .btn-ghost {
+            background: transparent;
+            color: #A1A1AA;
+            border: 1px solid rgba(255,255,255,0.10);
+            border-radius: 10px;
+            font-weight: 500;
+            transition: background 0.2s ease, color 0.2s ease, border-color 0.2s ease;
+        }
+        .btn-ghost:hover {
+            background: rgba(255,255,255,0.05);
+            color: #FFFFFF;
+            border-color: rgba(255,255,255,0.18);
+        }
+
+        /* ── Details/summary chevron ── */
+        details[open] summary .chevron { transform: rotate(180deg); }
+        .chevron { transition: transform 0.25s ease; }
+    </style>
+</head>
+<body class="bg-[#0A0A0B] text-white min-h-screen flex flex-col">
+    <!-- Cursor Halo -->
+    <div id="cursor-halo" class="fixed pointer-events-none rounded-full hidden sm:block" 
+         style="width: 40px; height: 40px; border: 1px solid rgba(255, 107, 53, 0.4); box-shadow: 0 0 15px rgba(255, 107, 53, 0.2); transform: translate(-50%, -50%); transition: width 0.1s, height 0.1s; z-index: 9999;"></div>
+
+    <!-- Navbar -->
+    <nav id="main-nav" class="bg-[#0A0A0B]/70 backdrop-blur-xl border-b border-white/[.04] sticky top-0 z-50 transition-all duration-300">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center h-16">
+
+                <!-- Logo -->
+                <a href="/" class="flex items-center gap-2.5 group flex-shrink-0">
+                    <img src="/static/skillsync-logo.png" alt="SkillSync Logo"
+                         class="w-8 h-8 rounded-lg object-contain transition-all group-hover:scale-105"
+                         style="filter: drop-shadow(0 0 6px rgba(255,107,53,0.3));">
+                    <span class="text-[17px] font-bold tracking-tight text-white">SkillSync</span>
+                </a>
+
+                <!-- Nav links (center) -->
+                <div class="hidden md:flex items-center gap-8">
+                    <a href="/" class="text-sm font-medium tracking-wide text-ink-secondary hover:text-white transition-colors duration-200">Home</a>
+                    {% if user %}
+                        {% if user.role == 'admin' %}
+                            <a href="/admin" class="text-sm font-medium tracking-wide text-ink-secondary hover:text-white transition-colors duration-200">Dashboard</a>
+                        {% else %}
+                            <a href="/dashboard" class="text-sm font-medium tracking-wide text-ink-secondary hover:text-white transition-colors duration-200">Dashboard</a>
+                        {% endif %}
+                    {% endif %}
+                </div>
+
+                <!-- Right side CTA -->
+                <div class="flex items-center gap-3">
+                    {% if user %}
+                        <span class="text-sm text-ink-muted hidden sm:inline-block">{{ user.name }}</span>
+                        <form action="/auth/logout" method="POST" class="inline">
+                            <button type="submit" class="btn-ghost text-sm px-4 py-2">Logout</button>
+                        </form>
+                    {% else %}
+                        <a href="/login" class="btn-ghost text-sm px-4 py-2">Log in</a>
+                        <a href="/signup" class="btn-primary text-sm px-4 py-2">Get Started</a>
+                    {% endif %}
+                </div>
+
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="flex-grow flex flex-col">
+        {% block content %}{% endblock %}
+    </main>
+
+    <!-- Footer -->
+    <footer class="border-t border-white/[.06] py-10 mt-auto">
+        <div class="max-w-7xl mx-auto px-4 flex flex-col sm:flex-row items-center justify-between gap-4">
+            <div class="flex items-center gap-2">
+                <img src="/static/skillsync-logo.png" alt="SkillSync Logo"
+                     class="w-6 h-6 rounded-md object-contain">
+                <span class="text-sm font-semibold text-white">SkillSync</span>
+            </div>
+            <p class="text-xs text-ink-muted">&copy; 2024 SkillSync. Built for College Project.</p>
+            <div class="flex gap-4 text-xs text-ink-muted">
+                <a href="/" class="hover:text-ink-secondary transition-colors">Home</a>
+                <a href="/login" class="hover:text-ink-secondary transition-colors">Login</a>
+                <a href="/signup" class="hover:text-ink-secondary transition-colors">Sign Up</a>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Scroll animation observer -->
+    <script>
+        // Navbar scroll effect
+        const nav = document.getElementById('main-nav');
+        window.addEventListener('scroll', () => {
+            if (window.scrollY > 20) {
+                nav.classList.add('nav-scrolled');
+            } else {
+                nav.classList.remove('nav-scrolled');
+            }
+        }, { passive: true });
+
+        // Intersection Observer for .fade-up elements
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('visible');
+                    observer.unobserve(entry.target);
+                }
+            });
+        }, { threshold: 0.1, rootMargin: '0px 0px -40px 0px' });
+
+        document.addEventListener('DOMContentLoaded', () => {
+            document.querySelectorAll('.fade-up').forEach(el => observer.observe(el));
+        });
+
+        // Also observe any HTMX-swapped content
+        document.addEventListener('htmx:afterSwap', () => {
+            document.querySelectorAll('.fade-up:not(.visible)').forEach(el => observer.observe(el));
+        });
+
+        // Cursor Halo Logic
+        const cursorHalo = document.getElementById('cursor-halo');
+        if (cursorHalo) {
+            document.addEventListener('mousemove', (e) => {
+                cursorHalo.style.left = e.clientX + 'px';
+                cursorHalo.style.top = e.clientY + 'px';
+            });
+            document.addEventListener('mousedown', () => {
+                cursorHalo.style.width = '30px';
+                cursorHalo.style.height = '30px';
+                cursorHalo.style.backgroundColor = 'rgba(255, 107, 53, 0.1)';
+            });
+            document.addEventListener('mouseup', () => {
+                cursorHalo.style.width = '40px';
+                cursorHalo.style.height = '40px';
+                cursorHalo.style.backgroundColor = 'transparent';
+            });
+        }
+    </script>
+</body>
+</html>

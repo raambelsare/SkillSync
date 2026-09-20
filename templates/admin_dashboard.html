@@ -1,0 +1,209 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 w-full fade-in">
+
+    <!-- Page Header -->
+    <div class="mb-8">
+        <div class="flex items-center gap-3 mb-2">
+            <div class="w-2 h-2 rounded-full bg-brand-500 animate-pulse"></div>
+            <span class="text-xs font-medium text-brand-400 uppercase tracking-widest">Recruiter Portal</span>
+        </div>
+        <h1 class="text-3xl font-bold text-white">Recruiter Dashboard</h1>
+        <p class="text-ink-secondary mt-1">Post jobs and discover top candidates.</p>
+    </div>
+
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+
+        <!-- ════════════════════════════════════
+             LEFT COLUMN: Post a Job
+        ════════════════════════════════════ -->
+        <div class="lg:col-span-1 space-y-6">
+
+            <!-- Post Job Card -->
+            <div class="bg-[#141416] rounded-2xl border border-white/[.08] p-6 card-hover sticky top-24">
+                <h2 class="text-base font-semibold mb-6 text-white flex items-center gap-2">
+                    <svg class="w-4 h-4 text-brand-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"/>
+                    </svg>
+                    Post a New Job
+                </h2>
+
+                <!-- Form — action/method UNCHANGED -->
+                <form action="/api/jobs" method="POST" class="space-y-4">
+                    <div>
+                        <label class="block text-xs font-medium text-ink-secondary mb-1.5 uppercase tracking-wide">Job Title</label>
+                        <input type="text" name="title" required
+                               class="w-full px-4 py-3 bg-[#1C1C1F] text-white border border-white/[.08] rounded-xl text-sm placeholder-ink-muted transition-all"
+                               placeholder="e.g. Software Engineer">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-medium text-ink-secondary mb-1.5 uppercase tracking-wide">Required Skills</label>
+                        <input type="text" name="skills" placeholder="e.g. Python, React, SQL" required
+                               class="w-full px-4 py-3 bg-[#1C1C1F] text-white border border-white/[.08] rounded-xl text-sm placeholder-ink-muted transition-all">
+                        <p class="text-xs text-ink-muted mt-1">Comma-separated</p>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-medium text-ink-secondary mb-1.5 uppercase tracking-wide">Location</label>
+                        <input type="text" name="location"
+                               class="w-full px-4 py-3 bg-[#1C1C1F] text-white border border-white/[.08] rounded-xl text-sm placeholder-ink-muted transition-all"
+                               placeholder="e.g. San Francisco, CA">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-medium text-ink-secondary mb-1.5 uppercase tracking-wide">Salary (USD/yr)</label>
+                        <input type="number" name="salary"
+                               class="w-full px-4 py-3 bg-[#1C1C1F] text-white border border-white/[.08] rounded-xl text-sm placeholder-ink-muted transition-all"
+                               placeholder="e.g. 120000">
+                    </div>
+                    <button type="submit" class="btn-primary w-full py-3 rounded-xl text-sm mt-2">
+                        Post Job
+                    </button>
+                </form>
+            </div>
+
+            <!-- Active Jobs Summary -->
+            {% if jobs %}
+            <div class="bg-[#141416] rounded-2xl border border-white/[.08] p-6">
+                <h3 class="text-sm font-semibold text-white mb-4 flex items-center gap-2">
+                    <svg class="w-4 h-4 text-brand-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"/>
+                    </svg>
+                    Your Posted Jobs
+                    <span class="ml-auto px-2 py-0.5 rounded-full bg-brand-900/40 text-brand-400 text-xs font-medium border border-brand-500/20">
+                        {{ jobs|length }}
+                    </span>
+                </h3>
+                <div class="space-y-2">
+                    {% for job in jobs[:5] %}
+                    <div class="flex items-center justify-between py-2 border-b border-white/[.04] last:border-0">
+                        <div>
+                            <p class="text-sm text-white font-medium">{{ job.title }}</p>
+                            {% if job.location %}
+                            <p class="text-xs text-ink-muted mt-0.5">{{ job.location }}</p>
+                            {% endif %}
+                        </div>
+                        {% if job.salary %}
+                        <span class="text-xs text-ink-secondary">${{ "{:,.0f}".format(job.salary) }}</span>
+                        {% endif %}
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+            {% endif %}
+
+        </div>
+
+        <!-- ════════════════════════════════════
+             RIGHT COLUMN: Top Resumes + Applications
+        ════════════════════════════════════ -->
+        <div class="lg:col-span-2 space-y-6">
+
+            <!-- Top Resumes Card -->
+            <div class="bg-[#141416] rounded-2xl border border-white/[.08] overflow-hidden">
+                <div class="px-6 py-5 border-b border-white/[.06] flex items-center justify-between">
+                    <h2 class="text-base font-semibold text-white flex items-center gap-2">
+                        <svg class="w-4 h-4 text-brand-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z"/>
+                        </svg>
+                        Top Resumes by ATS Score
+                    </h2>
+                    <span class="text-xs text-ink-muted">Highest scoring applicants</span>
+                </div>
+
+                {% if top_resumes %}
+                <div class="divide-y divide-white/[.04]">
+                    {% for resume in top_resumes %}
+                    <div class="px-6 py-4 flex items-center gap-4 hover:bg-white/[.02] transition-colors">
+                        <!-- Rank badge -->
+                        <div class="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0 text-xs font-bold
+                            {% if loop.index == 1 %} bg-amber-500/20 text-amber-400 border border-amber-500/30
+                            {% elif loop.index == 2 %} bg-zinc-500/20 text-zinc-300 border border-zinc-500/30
+                            {% elif loop.index == 3 %} bg-orange-900/30 text-orange-400 border border-orange-700/30
+                            {% else %} bg-white/[.04] text-ink-muted border border-white/[.06] {% endif %}">
+                            #{{ loop.index }}
+                        </div>
+
+                        <!-- Name -->
+                        <div class="flex-grow min-w-0">
+                            <p class="text-sm font-semibold text-white truncate">{{ resume.name }}</p>
+                        </div>
+
+                        <!-- Score bar -->
+                        <div class="flex items-center gap-3 flex-shrink-0">
+                            <div class="w-24 h-1.5 bg-white/[.06] rounded-full overflow-hidden hidden sm:block">
+                                <div class="h-full rounded-full transition-all duration-700
+                                    {% if resume.score >= 80 %} bg-green-400
+                                    {% elif resume.score >= 60 %} bg-amber-400
+                                    {% else %} bg-red-400 {% endif %}"
+                                    data-width="{{ resume.score }}">
+                                </div>
+                            </div>
+                            <span class="text-sm font-bold
+                                {% if resume.score >= 80 %} text-green-400
+                                {% elif resume.score >= 60 %} text-amber-400
+                                {% else %} text-red-400 {% endif %}">
+                                {{ resume.score|int }}
+                            </span>
+                            <span class="text-xs text-ink-muted">/100</span>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+                {% else %}
+                <div class="px-6 py-16 text-center text-ink-muted">
+                    <svg class="mx-auto h-10 w-10 mb-3 text-white/10" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.3">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                    </svg>
+                    <p class="text-sm">No resumes uploaded yet.</p>
+                </div>
+                {% endif %}
+            </div>
+
+            <!-- Applications Table -->
+            <div class="bg-[#141416] rounded-2xl border border-white/[.08] overflow-hidden">
+                <div class="px-6 py-5 border-b border-white/[.06]">
+                    <h2 class="text-base font-semibold text-white flex items-center gap-2">
+                        <svg class="w-4 h-4 text-brand-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/>
+                        </svg>
+                        Applications
+                    </h2>
+                </div>
+                <div class="overflow-x-auto">
+                    <table class="min-w-full">
+                        <thead>
+                            <tr class="border-b border-white/[.04]">
+                                <th scope="col" class="px-6 py-3.5 text-left text-xs font-medium text-ink-muted uppercase tracking-wider bg-[#0A0A0B]/60">Applicant</th>
+                                <th scope="col" class="px-6 py-3.5 text-left text-xs font-medium text-ink-muted uppercase tracking-wider bg-[#0A0A0B]/60">Role</th>
+                                <th scope="col" class="px-6 py-3.5 text-left text-xs font-medium text-ink-muted uppercase tracking-wider bg-[#0A0A0B]/60">Date</th>
+                                <th scope="col" class="px-6 py-3.5 text-right text-xs font-medium text-ink-muted uppercase tracking-wider bg-[#0A0A0B]/60">Status</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-white/[.04]">
+                            {% for app in applications %}
+                                {% include "partials/application_row.html" %}
+                            {% else %}
+                            <tr>
+                                <td colspan="4" class="px-6 py-16 text-center text-ink-muted">
+                                    <svg class="mx-auto h-8 w-8 mb-3 text-white/10" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.3">
+                                        <path stroke-linecap="round" stroke-linejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/>
+                                    </svg>
+                                    <p class="text-sm">No applications yet.</p>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+<script>
+document.querySelectorAll('[data-width]').forEach(function(el) {
+    el.style.width = (parseFloat(el.getAttribute('data-width')) || 0) + '%';
+});
+</script>
+{% endblock %}

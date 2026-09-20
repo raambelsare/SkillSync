@@ -1,0 +1,168 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="flex-grow flex items-center justify-center p-4 py-16 relative overflow-hidden bg-[#0A0A0B]">
+
+    <!-- Radial glow -->
+    <div class="absolute inset-0 pointer-events-none" aria-hidden="true"
+         style="background: radial-gradient(ellipse 700px 500px at 30% 50%, rgba(255,107,53,0.07) 0%, transparent 65%);"></div>
+
+    <div class="w-full max-w-md relative z-10">
+
+        <!-- Tab switcher -->
+        <div class="flex rounded-xl bg-[#141416] border border-white/[.08] p-1 mb-6">
+            <button id="tab-user"
+                    onclick="switchTab('user')"
+                    class="flex-1 py-2 rounded-lg text-sm font-medium transition-all tab-btn">
+                User / Recruiter
+            </button>
+            <button id="tab-superadmin"
+                    onclick="switchTab('superadmin')"
+                    class="flex-1 py-2 rounded-lg text-sm font-medium transition-all tab-btn">
+                Website Admin
+            </button>
+        </div>
+
+        <!-- ── USER / RECRUITER PANEL ── -->
+        <div id="panel-user" class="tab-panel bg-[#141416] border border-white/[.08] rounded-2xl p-8 fade-in">
+            <div class="text-center mb-8">
+                <img src="/static/skillsync-logo.png" alt="SkillSync Logo"
+                     class="w-12 h-12 rounded-xl object-contain mx-auto mb-4"
+                     style="filter: drop-shadow(0 0 8px rgba(255,107,53,0.35));">
+                <h2 class="text-2xl font-bold text-white tracking-tight">Welcome back</h2>
+                <p class="text-ink-secondary mt-1 text-sm">Sign in as a student or recruiter</p>
+            </div>
+
+            {% if error %}
+            <div class="bg-red-950/50 text-red-400 p-3 rounded-xl text-sm mb-6 border border-red-800/40 text-center">
+                {{ error }}
+            </div>
+            {% endif %}
+
+            <form action="/auth/login" method="POST" class="space-y-5">
+                <div>
+                    <label class="block text-xs font-medium text-ink-secondary mb-1.5 uppercase tracking-wide">Email</label>
+                    <input type="email" name="email" required
+                           class="w-full px-4 py-3 bg-[#1C1C1F] text-white border border-white/[.08] rounded-xl text-sm placeholder-ink-muted transition-all"
+                           placeholder="you@example.com">
+                </div>
+                <div>
+                    <label class="block text-xs font-medium text-ink-secondary mb-1.5 uppercase tracking-wide">Password</label>
+                    <input type="password" name="password" required
+                           class="w-full px-4 py-3 bg-[#1C1C1F] text-white border border-white/[.08] rounded-xl text-sm placeholder-ink-muted transition-all"
+                           placeholder="••••••••">
+                </div>
+                <button type="submit" class="btn-primary w-full py-3 rounded-xl text-sm mt-2">
+                    Sign In
+                </button>
+            </form>
+
+            <!-- Divider -->
+            <div class="my-6 relative">
+                <div class="absolute inset-0 flex items-center">
+                    <div class="w-full border-t border-white/[.06]"></div>
+                </div>
+                <div class="relative flex justify-center">
+                    <span class="px-3 bg-[#141416] text-xs text-ink-muted">Or continue with</span>
+                </div>
+            </div>
+
+            <div class="space-y-3">
+                <a href="/auth/google?role=student"
+                   class="w-full flex items-center justify-center gap-3 py-3 px-4 bg-[#1C1C1F] border border-white/[.08] rounded-xl text-sm font-medium text-ink-secondary hover:text-white hover:border-white/[.16] transition-all">
+                    <svg class="w-5 h-5 flex-shrink-0" viewBox="0 0 24 24" fill="none">
+                        <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/>
+                        <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/>
+                        <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05"/>
+                        <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/>
+                    </svg>
+                    Sign in with Google (Student)
+                </a>
+                <a href="/auth/google?role=admin"
+                   class="w-full flex items-center justify-center gap-3 py-3 px-4 bg-[#1C1C1F] border border-white/[.08] rounded-xl text-sm font-medium text-ink-secondary hover:text-white hover:border-white/[.16] transition-all">
+                    <svg class="w-5 h-5 flex-shrink-0" viewBox="0 0 24 24" fill="none">
+                        <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/>
+                        <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/>
+                        <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05"/>
+                        <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/>
+                    </svg>
+                    Sign in with Google (Recruiter)
+                </a>
+            </div>
+
+            <p class="text-center text-sm text-ink-muted mt-6">
+                Don't have an account?
+                <a href="/signup" class="text-brand-400 font-medium hover:text-brand-300 transition-colors ml-1">Sign up</a>
+            </p>
+        </div>
+
+        <!-- ── WEBSITE ADMIN PANEL ── -->
+        <div id="panel-superadmin" class="tab-panel bg-[#141416] border border-white/[.08] rounded-2xl p-8 fade-in hidden">
+            <div class="text-center mb-8">
+                <div class="w-12 h-12 rounded-xl flex items-center justify-center mx-auto mb-4"
+                     style="background: linear-gradient(135deg, #7C3AED, #4F46E5);">
+                    <svg class="w-6 h-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/>
+                    </svg>
+                </div>
+                <h2 class="text-2xl font-bold text-white tracking-tight">Admin Access</h2>
+                <p class="text-ink-secondary mt-1 text-sm">Website administrator only</p>
+            </div>
+
+            {% if sa_error %}
+            <div class="bg-red-950/50 text-red-400 p-3 rounded-xl text-sm mb-6 border border-red-800/40 text-center">
+                {{ sa_error }}
+            </div>
+            {% endif %}
+
+            <form action="/auth/superadmin-login" method="POST" class="space-y-5">
+                <div>
+                    <label class="block text-xs font-medium text-ink-secondary mb-1.5 uppercase tracking-wide">Admin Email</label>
+                    <input type="email" name="email" required
+                           class="w-full px-4 py-3 bg-[#1C1C1F] text-white border border-white/[.08] rounded-xl text-sm placeholder-ink-muted transition-all"
+                           placeholder="admin@skillsync.com">
+                </div>
+                <div>
+                    <label class="block text-xs font-medium text-ink-secondary mb-1.5 uppercase tracking-wide">Admin Password</label>
+                    <input type="password" name="password" required
+                           class="w-full px-4 py-3 bg-[#1C1C1F] text-white border border-white/[.08] rounded-xl text-sm placeholder-ink-muted transition-all"
+                           placeholder="••••••••">
+                </div>
+                <button type="submit"
+                        class="w-full py-3 rounded-xl text-sm font-semibold mt-2 text-white transition-all"
+                        style="background: linear-gradient(135deg, #7C3AED, #4F46E5); box-shadow: 0 0 20px rgba(124,58,237,0.25);">
+                    Access Admin Panel
+                </button>
+            </form>
+
+            <p class="text-center text-xs text-ink-muted mt-6">
+                🔒 Restricted access. Credentials set via environment variables.
+            </p>
+        </div>
+
+    </div>
+</div>
+
+<script>
+    const activeTab   = "{{ tab or 'user' }}";
+    const hasSaError  = "{{ 'yes' if sa_error else '' }}" === "yes";
+
+    function switchTab(name) {
+        // Panels
+        document.querySelectorAll('.tab-panel').forEach(p => p.classList.add('hidden'));
+        document.getElementById('panel-' + name).classList.remove('hidden');
+
+        // Buttons
+        document.querySelectorAll('.tab-btn').forEach(b => {
+            b.classList.remove('bg-[#1C1C1F]', 'text-white');
+            b.classList.add('text-ink-secondary');
+        });
+        const active = document.getElementById('tab-' + name);
+        active.classList.add('bg-[#1C1C1F]', 'text-white');
+        active.classList.remove('text-ink-secondary');
+    }
+
+    // Initialise from server-side tab param (e.g. after SA login error)
+    switchTab(hasSaError ? 'superadmin' : activeTab);
+</script>
+{% endblock %}
