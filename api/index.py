@@ -38,6 +38,25 @@ app.add_middleware(
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 templates = Jinja2Templates(directory=os.path.join(BASE_DIR, "templates"))
 
+def get_site_url(request: Request = None) -> str:
+    """Resolve the canonical site URL.
+
+    Priority:
+    1. SITE_URL          – explicit override (any environment)
+    2. VERCEL_PROJECT_PRODUCTION_URL – Vercel stable production domain (auto-set by Vercel)
+    3. VERCEL_URL        – per-deployment unique URL (auto-set by Vercel)
+    4. request.base_url  – local fallback
+    """
+    if os.environ.get("SITE_URL"):
+        return os.environ["SITE_URL"].rstrip("/")
+    if os.environ.get("VERCEL_PROJECT_PRODUCTION_URL"):
+        return f"https://{os.environ['VERCEL_PROJECT_PRODUCTION_URL']}"
+    if os.environ.get("VERCEL_URL"):
+        return f"https://{os.environ['VERCEL_URL']}"
+    if request:
+        return str(request.base_url).rstrip("/")
+    return ""
+
 # Mount static files
 app.mount("/static", StaticFiles(directory=os.path.join(BASE_DIR, "static")), name="static")
 
@@ -225,7 +244,7 @@ async def auth_google(request: Request, role: Optional[str] = None):
     try:
         res = supabase.auth.sign_in_with_oauth({
             "provider": "google",
-            "options": {"redirect_to": f"{os.environ.get('SITE_URL', str(request.base_url).rstrip('/'))}auth/callback"}
+            "options": {"redirect_to": f"{get_site_url(request)}/auth/callback"}
         })
         response = RedirectResponse(url=res.url)
         if role in ("student", "admin"):
