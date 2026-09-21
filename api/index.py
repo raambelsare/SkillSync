@@ -225,7 +225,7 @@ async def auth_google(request: Request, role: Optional[str] = None):
     try:
         res = supabase.auth.sign_in_with_oauth({
             "provider": "google",
-            "options": {"redirect_to": f"{request.base_url}auth/callback"}
+            "options": {"redirect_to": f"{os.environ.get('SITE_URL', str(request.base_url).rstrip('/'))}auth/callback"}
         })
         response = RedirectResponse(url=res.url)
         if role in ("student", "admin"):
