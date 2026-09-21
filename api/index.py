@@ -242,18 +242,26 @@ async def superadmin_dashboard(request: Request):
 async def auth_google(request: Request, role: Optional[str] = None):
 
     try:
-        res = supabase.auth.sign_in_with_oauth({
-            "provider": "google",
-            "options": {
-                "redirect_to": f"{get_site_url(request)}/auth/callback",
-                "query_params": {"response_type": "token"},  # Force implicit flow — server-side Python cannot participate in PKCE (no code_verifier)
-            }
+        # Build the OAuth URL manually to guarantee implicit flow (response_type=token).
+        # The gotrue-py client may override query_params and force PKCE, which breaks
+        # server-side Python (no code_verifier available). Constructing the URL directly
+        # ensures Supabase always returns #access_token= in the hash (implicit flow).
+        supabase_url = os.environ.get("SUPABASE_URL", "").rstrip("/")
+        redirect_to  = f"{get_site_url(request)}/auth/callback"
+        import urllib.parse
+        params = urllib.parse.urlencode({
+            "provider":      "google",
+            "redirect_to":   redirect_to,
+            "response_type": "token",   # implicit flow — tokens in URL hash
         })
-        response = RedirectResponse(url=res.url)
+        oauth_url = f"{supabase_url}/auth/v1/authorize?{params}"
+
+        response = RedirectResponse(url=oauth_url)
         if role in ("student", "admin"):
             response.set_cookie(key="oauth_role", value=role, max_age=600, httponly=True)
         return response
-    except Exception:
+    except Exception as e:
+        print(f"[auth/google] error: {e}")
         return RedirectResponse(url="/login?error=Google auth failed")
 
 @app.get("/auth/callback", response_class=HTMLResponse)
