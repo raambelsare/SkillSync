@@ -234,8 +234,54 @@ async def auth_google(request: Request, role: Optional[str] = None):
     except Exception:
         return RedirectResponse(url="/login?error=Google auth failed")
 
-@app.get("/auth/callback", response_class=HTMLResponse)
+@app.get("/auth/callback")
 async def auth_callback(request: Request):
+    code = request.query_params.get("code")
+
+    # PKCE flow: Supabase sends ?code= in query string (default since Supabase v2)
+    if code:
+        try:
+            session_res = supabase.auth.exchange_code_for_session({"auth_code": code})
+            if not session_res or not session_res.session:
+                return RedirectResponse(url="/login?error=Failed+to+exchange+code", status_code=302)
+
+            session      = session_res.session
+            access_token = session.access_token
+            user         = session_res.user
+            user_id      = user.id
+            user_metadata = getattr(user, "user_metadata", {}) or {}
+            user_name     = user_metadata.get("full_name", "Google User") if isinstance(user_metadata, dict) else "Google User"
+            user_email    = getattr(user, "email", "") or ""
+
+            student_exists = supabase.table("students").select("id").eq("id", user_id).execute().data
+            admin_exists   = supabase.table("admins").select("id").eq("id", user_id).execute().data
+
+            is_new_recruiter = False
+            oauth_role = request.cookies.get("oauth_role", "student")
+
+            if not student_exists and not admin_exists:
+                _ensure_public_user(user_id, user_email, user_name)
+                if oauth_role == "admin":
+                    supabase.table("admins").insert({"id": user_id, "name": user_name}).execute()
+                    is_new_recruiter = True
+                else:
+                    supabase.table("students").insert({"id": user_id, "name": user_name}).execute()
+
+            if is_new_recruiter or admin_exists:
+                redirect_url = "/recruiter/onboarding" if is_new_recruiter else "/admin"
+            else:
+                redirect_url = "/dashboard"
+
+            response = RedirectResponse(url=redirect_url, status_code=302)
+            response.set_cookie(key="sb-access-token", value=access_token, httponly=True, secure=True, samesite="lax")
+            response.delete_cookie("oauth_role")
+            return response
+
+        except Exception as e:
+            print(f"[auth/callback] PKCE exchange error: {e}")
+            return RedirectResponse(url="/login?error=Google+sign-in+failed", status_code=302)
+
+    # Implicit flow fallback: tokens in URL hash — handled client-side
     return templates.TemplateResponse("auth_callback.html", {"request": request})
 
 @app.post("/auth/set-session")
